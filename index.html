@@ -14,7 +14,6 @@
     <!-- Styles -->
     <link rel="stylesheet" href="css/modern-theme.css">
     <link rel="stylesheet" href="css/sweetalert.min.css">
-    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
     <!-- Fonts -->
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&amp;display=swap"
@@ -24,8 +23,8 @@
 
     <script type="module">
         // Import the functions you need from the SDKs you need
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.9.1/firebase-app.js";
-        import { getAnalytics } from "https://www.gstatic.com/firebasejs/11.9.1/firebase-analytics.js";
+        import {initializeApp} from "https://www.gstatic.com/firebasejs/11.9.1/firebase-app.js";
+        import {getAnalytics} from "https://www.gstatic.com/firebasejs/11.9.1/firebase-analytics.js";
         // TODO: Add SDKs for Firebase products that you want to use
         // https://firebase.google.com/docs/web/setup#available-libraries
 
@@ -52,243 +51,263 @@
 
     <title>Generator Lua & Manifest</title>
 </head>
-
 <body>
-<header>
-    <h1>Steam Games Library - Cysaw</h1>
-    <span>?? Game names are temporarily disabled due to Steam API rate limits</span>
-</header>
-
-<div class="container mt-4">
-
-
-    <div id="alertContainer"></div>
-
-
-    <div id="loading" class="text-center my-4" style="display:none;">
-        <div class="spinner-border text-primary" role="status">
-            <span class="visually-hidden">Loading...</span>
-        </div>
-    </div>
-
-    <div class="games-container" id="gamesContainer"></div>
-
-
+<!-- Active Users Counter -->
+<div class="active-users">
+    <span class="active-users-count">260</span>
+    <span class="active-users-label">ACTIVE USERS</span>
 </div>
 
-<script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+<main class="main">
+    <h1 class="title">Manifest & Lua Generator</h1>
+
+    <!-- Search Input -->
+    <div class="search-container">
+        <div class="input-group">
+            <input type="text" id="appid-input" placeholder="Enter your APP ID / URL here" class="cyber-input">
+            <button id="submit-button" class="cyber-button" onclick="handleInput()">
+                <span class="button-content">SUBMIT</span>
+            </button>
+<!--            <button id="shop-button" class="cyber-button shop-btn"
+                    onclick="window.open('https://shop.cysaw.org/shop/', '_blank')">
+                <svg style="vertical-align:middle;margin-right:7px;" width="20" height="20" fill="none"
+                     stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+                     viewBox="0 0 24 24">
+                    <circle cx="9" cy="21" r="1"/>
+                    <circle cx="20" cy="21" r="1"/>
+                    <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/>
+                </svg>
+                <span class="button-content">SHOP</span>
+            </button>-->
+
+            <!--
+            <div class="input-group mt-2">
+                <button onclick="window.open('/games', '_blank')"  id="shop-button"  class="cyber-button shop-btn " target="_blank">
+                    <span class="button-content">GAMES</span>
+                </button>
+            </div>
+            -->
+        </div>
+
+    </div>
+
+    <!-- Log Container -->
+    <div id="log-container" class="log-container"></div>
+</main>
+
+<!-- Modals -->
+<div id="disclaimerModal" class="modal">
+    <div class="modal-content">
+        <span class="close-button">&times;</span>
+        <h2>Disclaimer</h2>
+        <div class="modal-body">
+            <strong>English:</strong><br>
+            This website is for <strong class="highlight">informational purposes</strong> only. We are not responsible
+            for any <strong class="highlight">consequences</strong> that may arise from using the provided information.
+            <br><br>
+            <strong>WARNING!</strong><br>
+            If you see someone claiming to be me anywhere on other social media, THAT'S NOT ME! They are likely trying
+            to SCAM you.<br>
+            For your safety, do not deal with these people.
+        </div>
+        <button class="cyber-button modal-button" onclick="closeModal('disclaimerModal')">
+            <span class="button-content">UNDERSTOOD</span>
+        </button>
+    </div>
+</div>
+
+<div id="gameUnavailableModal" class="modal">
+    <div class="modal-content">
+        <span class="close-button" onclick="closeModal('gameUnavailableModal')">&times;</span>
+        <h2>Game Unavailable</h2>
+        <div class="modal-body">
+            <p id="gameUnavailableMessage"></p>
+        </div>
+        <button class="cyber-button modal-button" onclick="closeModal('gameUnavailableModal')">
+            <span class="button-content">OK</span>
+        </button>
+    </div>
+</div>
+
+<script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+
 <!-- Scripts -->
 <script src="js/sweetalert.min.js"></script>
-
 <script>
-    let currentPage = 1;
-    let totalPages = 1;
-    let searchQuery = '';
-
-
-    function getPageFromUrl() {
-        const params = new URLSearchParams(window.location.search);
-        return parseInt(params.get('page')) || 1;
+    // Modal functions
+    function showModal(modalId) {
+        document.getElementById(modalId).style.display = 'flex';
     }
 
-    function updateUrlPage(page) {
-        const params = new URLSearchParams(window.location.search);
-        params.set('page', page);
-        window.history.pushState({}, '', `${location.pathname}?${params}`);
+    function closeModal(modalId) {
+        document.getElementById(modalId).style.display = 'none';
+        document.getElementById('appid-input').focus();
     }
 
-    async function fetchGames(page = 1, search = '') {
-        try {
-            showLoading(true);
-            const res = await axios.get(`/api/games?search=${search}&page=${page}`);
-            const data = res.data;
-            const container = document.getElementById('gamesContainer');
-            container.innerHTML = data??'';
-            // console.log("data", data);
-            // totalPages = data.total_pages;
-            // renderGames(data.games);
-            // renderPagination(totalPages, page);
-
-            const gameCards = document.getElementsByClassName('game-card');
-
-            Array.from(gameCards).forEach(card => {
-                card.addEventListener('click', async (event) => {
-                    const appId = event.currentTarget.getAttribute('data-appid');
-                    console.log('App ID:', appId);
-                    copyToClipboard(appId)
-                    // You can do something with the appId here...
-                });
-            });
-
-        } catch (err) {
-            console.error(err);
-        }finally {
-            showLoading(false);
+    // Close modal when clicking outside
+    window.onclick = function (event) {
+        if (event.target.classList.contains('modal')) {
+            event.target.style.display = "none";
+            document.getElementById('appid-input').focus();
         }
     }
 
-    function renderGames(games) {
-        const container = document.getElementById('gamesContainer');
-        container.innerHTML = '';
-
-        games.forEach(game => {
-            const card = document.createElement('div');
-            card.className = 'game-card card';
-            card.innerHTML = `
-          <img src="${game.image}" alt="Game ${game.appid}" class="card-img-top" />
-          <div class="card-body">
-          <h5 class="card-title text-light">AppID: ${game.appid}</h5>
-
-          <strong class="card-text text-light">${game.name || 'Game ' + game.appid}</strong>
-          </div>
-        `;
-            card.onclick = () => copyToClipboard(game.appid);
-            container.appendChild(card);
-        });
-    }
-
-    const gameCards = document.getElementsByClassName('game-card');
-
-    Array.from(gameCards).forEach(card => {
-        card.addEventListener('click', async (event) => {
-            const appId = event.currentTarget.getAttribute('data-appid');
-            console.log('App ID:', appId);
-
-            // You can do something with the appId here...
-        });
-    });
-
-    function copyToClipboard(text) {
-        navigator.clipboard.writeText(text)
-            .then(() => showSuccessAlert(`Copied AppID: ${text}`))
-            .catch(err => console.error('Failed to copy!', err));
-    }
-
-    function showSuccessAlert(message) {
-
-        // Show SweetAlert2 toast
-        Swal.fire({
-            toast: true,
-            position: 'top-end',
-            icon: 'success',
-            title: message??'',
-            showConfirmButton: false,
-            timer: 2000,
-            timerProgressBar: true
-        });
-
-
-    }
-
-
-    function renderPagination(totalPages, current) {
-        const pagination = document.getElementById('pagination');
-        pagination.innerHTML = '';
-
-        const createPageItem = (label, page, disabled = false, active = false) => {
-            const li = document.createElement('li');
-            li.className = `page-item${disabled ? ' disabled' : ''}${active ? ' active' : ''}`;
-
-            const a = document.createElement('button');
-            a.className = 'page-link';
-            a.textContent = label;
-            a.onclick = () => {
-                if (!disabled && currentPage !== page) {
-                    currentPage = page;
-                    updateUrlPage(page);
-                    fetchGames(currentPage, searchQuery);
+    // Close modal with ESC key
+    document.addEventListener('keydown', function (event) {
+        if (event.key === 'Escape') {
+            document.querySelectorAll('.modal').forEach(modal => {
+                if (modal.style.display === 'flex') {
+                    modal.style.display = 'none';
+                    document.getElementById('appid-input').focus();
                 }
-            };
-
-            li.appendChild(a);
-            pagination.appendChild(li);
-        };
-
-        createPageItem('« Prev', current - 1, current === 1);
-
-        if (totalPages <= 7) {
-            for (let i = 1; i <= totalPages; i++) {
-                createPageItem(i, i, false, i === current);
-            }
-        } else {
-            createPageItem(1, 1, false, current === 1);
-            if (current > 3) pagination.insertAdjacentHTML('beforeend', '<li class="page-item disabled"><span class="page-link">...</span></li>');
-
-            const start = Math.max(2, current - 1);
-            const end = Math.min(totalPages - 1, current + 1);
-
-            for (let i = start; i <= end; i++) {
-                createPageItem(i, i, false, i === current);
-            }
-
-            if (current < totalPages - 2) pagination.insertAdjacentHTML('beforeend', '<li class="page-item disabled"><span class="page-link">...</span></li>');
-            createPageItem(totalPages, totalPages, false, current === totalPages);
+            });
         }
-
-        createPageItem('Next »', current + 1, current === totalPages);
-    }
-
-    function filterGames0() {
-        searchQuery = document.getElementById('search-input').value.trim();
-        currentPage = 1;
-        fetchGames(currentPage, searchQuery);
-    }
-
-
-    // Game filtering functionality
-    function filterGames() {
-        const searchValue = document.getElementById('search-input').value.toLowerCase();
-        const cards = document.querySelectorAll('.game-card');
-
-        cards.forEach(card => {
-            const appId = card.dataset.appid.toLowerCase();
-            card.style.display = appId.includes(searchValue) ? 'block' : 'none';
-        });
-    }
-
-    function showLoading(show) {
-        const loading = document.getElementById('loading');
-        loading.style.display = show ? 'block' : 'none';
-    }
-
-    // fetchGames();
-    document.addEventListener('DOMContentLoaded', () => {
-        currentPage = getPageFromUrl();
-        fetchGames(currentPage);
     });
 
-    /*
-            // Lazy loading for images
-        document.addEventListener('DOMContentLoaded', function() {
-            const images = document.querySelectorAll('.game-image[loading="lazy"]');
+    // Show disclaimer on load
+    document.addEventListener("DOMContentLoaded", function () {
+        showModal('disclaimerModal');
+    });
 
-            if ('IntersectionObserver' in window) {
-                const imageObserver = new IntersectionObserver((entries, observer) => {
-                    entries.forEach(entry => {
-                        if (entry.isIntersecting) {
-                            const img = entry.target;
-                            img.src = img.src; // Trigger load
-                            observer.unobserve(img);
-                        }
-                    });
+    // Handle input submission with Enter key
+    document.getElementById('appid-input').addEventListener('keypress', function (e) {
+        if (e.key === 'Enter') {
+            handleInput();
+        }
+    });
+
+    async function handleInput() {
+        const inputElement = document.getElementById("appid-input");
+        const submitButton = document.getElementById("submit-button");
+        const logContainer = document.getElementById("log-container");
+        const inputValue = inputElement.value.trim();
+
+        if (!inputValue) return;
+
+        submitButton.classList.add('loading');
+        submitButton.disabled = true;
+
+        function extractAppId(input) {
+            if (/^\d+$/.test(input)) return input;
+            const match = input.match(/(?:app\/|agecheck\/app\/)(\d+)/);
+            return match ? match[1] : null;
+        }
+
+        function getCurrentTimestamp() {
+            const now = new Date();
+            return now.toLocaleString();
+        }
+
+        function addLog(message, type = "Information") {
+            const logEntry = document.createElement("div");
+            logEntry.className = "log-entry";
+            logEntry.innerHTML = `
+                    <span class="log-timestamp">${getCurrentTimestamp()}</span>
+                    <span class="log-type ${type.toLowerCase()}">${type}</span>
+                    <span class="log-message">${message}</span>
+                `;
+
+            if (logContainer.firstChild) {
+                logContainer.insertBefore(logEntry, logContainer.firstChild);
+            } else {
+                logContainer.appendChild(logEntry);
+            }
+
+            const messageLength = message.length;
+            const baseTime = 2000;
+            const timePerChar = 50;
+            const displayTime = Math.min(baseTime + messageLength * timePerChar, 5000);
+
+            setTimeout(() => {
+                logEntry.classList.add('fade-out');
+                setTimeout(() => {
+                    logEntry.remove();
+                }, 300);
+            }, displayTime);
+        }
+
+        const appId = extractAppId(inputValue);
+
+        if (!appId) {
+            addLog("Invalid URL or APP ID.", "Error");
+            submitButton.classList.remove('loading');
+            submitButton.disabled = false;
+
+            inputElement.classList.add('input-clear');
+            setTimeout(() => {
+                inputElement.value = '';
+                inputElement.classList.remove('input-clear');
+            }, 300);
+            return;
+        }
+
+        addLog(`Extracted APP ID: ${appId}`, "Information");
+
+        try {
+            // const response = await fetch('api.json', {
+            //     method: 'POST',
+            //     headers: { 'Content-Type': 'application/json' },
+            //     body: JSON.stringify({ appId })
+            // });
+            //    const response = await axios.post('https://cysaw.org/api.php',
+            const response = await axios.post('/proxy',
+                //req.body,
+                JSON.stringify({appId}),
+                {
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Cookie': 'PHPSESSID=03c89c3b775c0c1093737b55f8757c07'
+                        // 'Cookie': 'PHPSESSID=0a8789882cabdcf73ed74d65be89de8e'
+                    }
                 });
 
-                images.forEach(img => imageObserver.observe(img));
+//                const data = await response.json();
+            const data = response.data;
+
+            if (data.status === 'error') {
+                document.getElementById('gameUnavailableMessage').textContent =
+                    `The game with APP ID ${appId} is currently unavailable.`;
+                showModal('gameUnavailableModal');
+                addLog(`Game with APP ID ${appId} is unavailable.`, "Error");
+            } else {
+                addLog(`Game with APP ID ${appId} exists. Processing...`, "Success");
+                if (data.downloadUrl) {
+                    window.open(data.downloadUrl, '_blank');
+                    addLog("Download link opened in new tab.", "Success");
+
+                    const dirPayload = JSON.stringify({
+                        dirName: data.dirName
+                    });
+
+                    await axios.post('/proxy/mark_downloaded',
+                        dirPayload,
+                        {
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'Cookie': 'PHPSESSID=03c89c3b775c0c1093737b55f8757c07'
+                                // 'Cookie': 'PHPSESSID=0a8789882cabdcf73ed74d65be89de8e'
+                            }
+                        }
+                    );
+                } else {
+                    addLog("Failed to generate download link.", "Error");
+                }
             }
-        });
-     */
+        } catch (error) {
+            console.error("Unexpected error:", error);
+            addLog("An unexpected error occurred. Check console for details.", "Error");
+        } finally {
+            submitButton.classList.remove('loading');
+            submitButton.disabled = false;
 
-    // Theme toggle functionality
-    function toggleTheme() {
-        document.body.classList.toggle('light-theme');
-        localStorage.setItem('theme', document.body.classList.contains('light-theme') ? 'light' : 'dark');
+            inputElement.classList.add('input-clear');
+            setTimeout(() => {
+                inputElement.value = '';
+                inputElement.classList.remove('input-clear');
+            }, 300);
+        }
     }
-
-    // Apply saved theme
-    if (localStorage.getItem('theme') === 'light') {
-        document.body.classList.add('light-theme');
-    }
-
 </script>
 </body>
+
 </html>
