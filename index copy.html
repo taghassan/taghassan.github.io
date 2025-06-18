@@ -1,0 +1,313 @@
+<!DOCTYPE html>
+<html lang="en">
+
+
+<meta http-equiv="content-type" content="text/html;charset=UTF-8"/>
+<head>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <meta name="description" content="Manifest & Lua Generator - A modern tool for game development">
+
+    <!-- Favicon -->
+    <link rel="icon" type="image/svg+xml" href="images/logo.png"/>
+
+    <!-- Styles -->
+    <link rel="stylesheet" href="css/modern-theme.css">
+    <link rel="stylesheet" href="css/sweetalert.min.css">
+
+    <!-- Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&amp;display=swap"
+          rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500&amp;display=swap" rel="stylesheet">
+
+
+    <script type="module">
+        // Import the functions you need from the SDKs you need
+        import {initializeApp} from "https://www.gstatic.com/firebasejs/11.9.1/firebase-app.js";
+        import {getAnalytics} from "https://www.gstatic.com/firebasejs/11.9.1/firebase-analytics.js";
+        // TODO: Add SDKs for Firebase products that you want to use
+        // https://firebase.google.com/docs/web/setup#available-libraries
+
+        // Your web app's Firebase configuration
+        // For Firebase JS SDK v7.20.0 and later, measurementId is optional
+        const firebaseConfig = {
+            apiKey: "AIzaSyBp-OebrwNfeGmmR5p_TggItlIrVXh0Xio",
+            authDomain: "cysawpw.firebaseapp.com",
+            projectId: "cysawpw",
+            storageBucket: "cysawpw.firebasestorage.app",
+            messagingSenderId: "1036615458943",
+            appId: "1:1036615458943:web:1842da03f86880c8931f4a",
+            measurementId: "G-GV4K008J5L"
+        };
+
+        // Initialize Firebase
+        const app = initializeApp(firebaseConfig);
+        const analytics = getAnalytics(app);
+    </script>
+
+    <!-- google ads script -->
+    <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-8107574011529731"
+            crossorigin="anonymous"></script>
+
+    <title>Generator Lua & Manifest</title>
+</head>
+<body>
+<!-- Active Users Counter -->
+<div class="active-users">
+    <span class="active-users-count">260</span>
+    <span class="active-users-label">ACTIVE USERS</span>
+</div>
+
+<main class="main">
+    <h1 class="title">Manifest & Lua Generator</h1>
+
+    <!-- Search Input -->
+    <div class="search-container">
+        <div class="input-group">
+            <input type="text" id="appid-input" placeholder="Enter your APP ID / URL here" class="cyber-input">
+            <button id="submit-button" class="cyber-button" onclick="handleInput()">
+                <span class="button-content">SUBMIT</span>
+            </button>
+<!--            <button id="shop-button" class="cyber-button shop-btn"
+                    onclick="window.open('https://shop.cysaw.org/shop/', '_blank')">
+                <svg style="vertical-align:middle;margin-right:7px;" width="20" height="20" fill="none"
+                     stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+                     viewBox="0 0 24 24">
+                    <circle cx="9" cy="21" r="1"/>
+                    <circle cx="20" cy="21" r="1"/>
+                    <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/>
+                </svg>
+                <span class="button-content">SHOP</span>
+            </button>-->
+
+            <!--
+            <div class="input-group mt-2">
+                <button onclick="window.open('/games', '_blank')"  id="shop-button"  class="cyber-button shop-btn " target="_blank">
+                    <span class="button-content">GAMES</span>
+                </button>
+            </div>
+            -->
+        </div>
+
+    </div>
+
+    <!-- Log Container -->
+    <div id="log-container" class="log-container"></div>
+</main>
+
+<!-- Modals -->
+<div id="disclaimerModal" class="modal">
+    <div class="modal-content">
+        <span class="close-button">&times;</span>
+        <h2>Disclaimer</h2>
+        <div class="modal-body">
+            <strong>English:</strong><br>
+            This website is for <strong class="highlight">informational purposes</strong> only. We are not responsible
+            for any <strong class="highlight">consequences</strong> that may arise from using the provided information.
+            <br><br>
+            <strong>WARNING!</strong><br>
+            If you see someone claiming to be me anywhere on other social media, THAT'S NOT ME! They are likely trying
+            to SCAM you.<br>
+            For your safety, do not deal with these people.
+        </div>
+        <button class="cyber-button modal-button" onclick="closeModal('disclaimerModal')">
+            <span class="button-content">UNDERSTOOD</span>
+        </button>
+    </div>
+</div>
+
+<div id="gameUnavailableModal" class="modal">
+    <div class="modal-content">
+        <span class="close-button" onclick="closeModal('gameUnavailableModal')">&times;</span>
+        <h2>Game Unavailable</h2>
+        <div class="modal-body">
+            <p id="gameUnavailableMessage"></p>
+        </div>
+        <button class="cyber-button modal-button" onclick="closeModal('gameUnavailableModal')">
+            <span class="button-content">OK</span>
+        </button>
+    </div>
+</div>
+
+<script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+
+<!-- Scripts -->
+<script src="js/sweetalert.min.js"></script>
+<script>
+    // Modal functions
+    function showModal(modalId) {
+        document.getElementById(modalId).style.display = 'flex';
+    }
+
+    function closeModal(modalId) {
+        document.getElementById(modalId).style.display = 'none';
+        document.getElementById('appid-input').focus();
+    }
+
+    // Close modal when clicking outside
+    window.onclick = function (event) {
+        if (event.target.classList.contains('modal')) {
+            event.target.style.display = "none";
+            document.getElementById('appid-input').focus();
+        }
+    }
+
+    // Close modal with ESC key
+    document.addEventListener('keydown', function (event) {
+        if (event.key === 'Escape') {
+            document.querySelectorAll('.modal').forEach(modal => {
+                if (modal.style.display === 'flex') {
+                    modal.style.display = 'none';
+                    document.getElementById('appid-input').focus();
+                }
+            });
+        }
+    });
+
+    // Show disclaimer on load
+    document.addEventListener("DOMContentLoaded", function () {
+        showModal('disclaimerModal');
+    });
+
+    // Handle input submission with Enter key
+    document.getElementById('appid-input').addEventListener('keypress', function (e) {
+        if (e.key === 'Enter') {
+            handleInput();
+        }
+    });
+
+    async function handleInput() {
+        const inputElement = document.getElementById("appid-input");
+        const submitButton = document.getElementById("submit-button");
+        const logContainer = document.getElementById("log-container");
+        const inputValue = inputElement.value.trim();
+
+        if (!inputValue) return;
+
+        submitButton.classList.add('loading');
+        submitButton.disabled = true;
+
+        function extractAppId(input) {
+            if (/^\d+$/.test(input)) return input;
+            const match = input.match(/(?:app\/|agecheck\/app\/)(\d+)/);
+            return match ? match[1] : null;
+        }
+
+        function getCurrentTimestamp() {
+            const now = new Date();
+            return now.toLocaleString();
+        }
+
+        function addLog(message, type = "Information") {
+            const logEntry = document.createElement("div");
+            logEntry.className = "log-entry";
+            logEntry.innerHTML = `
+                    <span class="log-timestamp">${getCurrentTimestamp()}</span>
+                    <span class="log-type ${type.toLowerCase()}">${type}</span>
+                    <span class="log-message">${message}</span>
+                `;
+
+            if (logContainer.firstChild) {
+                logContainer.insertBefore(logEntry, logContainer.firstChild);
+            } else {
+                logContainer.appendChild(logEntry);
+            }
+
+            const messageLength = message.length;
+            const baseTime = 2000;
+            const timePerChar = 50;
+            const displayTime = Math.min(baseTime + messageLength * timePerChar, 5000);
+
+            setTimeout(() => {
+                logEntry.classList.add('fade-out');
+                setTimeout(() => {
+                    logEntry.remove();
+                }, 300);
+            }, displayTime);
+        }
+
+        const appId = extractAppId(inputValue);
+
+        if (!appId) {
+            addLog("Invalid URL or APP ID.", "Error");
+            submitButton.classList.remove('loading');
+            submitButton.disabled = false;
+
+            inputElement.classList.add('input-clear');
+            setTimeout(() => {
+                inputElement.value = '';
+                inputElement.classList.remove('input-clear');
+            }, 300);
+            return;
+        }
+
+        addLog(`Extracted APP ID: ${appId}`, "Information");
+
+        try {
+            // const response = await fetch('api.json', {
+            //     method: 'POST',
+            //     headers: { 'Content-Type': 'application/json' },
+            //     body: JSON.stringify({ appId })
+            // });
+            //    const response = await axios.post('https://cysaw.org/api.php',
+            const response = await axios.post('/proxy',
+                //req.body,
+                JSON.stringify({appId}),
+                {
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Cookie': 'PHPSESSID=03c89c3b775c0c1093737b55f8757c07'
+                        // 'Cookie': 'PHPSESSID=0a8789882cabdcf73ed74d65be89de8e'
+                    }
+                });
+
+//                const data = await response.json();
+            const data = response.data;
+
+            if (data.status === 'error') {
+                document.getElementById('gameUnavailableMessage').textContent =
+                    `The game with APP ID ${appId} is currently unavailable.`;
+                showModal('gameUnavailableModal');
+                addLog(`Game with APP ID ${appId} is unavailable.`, "Error");
+            } else {
+                addLog(`Game with APP ID ${appId} exists. Processing...`, "Success");
+                if (data.downloadUrl) {
+                    window.open(data.downloadUrl, '_blank');
+                    addLog("Download link opened in new tab.", "Success");
+
+                    const dirPayload = JSON.stringify({
+                        dirName: data.dirName
+                    });
+
+                    await axios.post('/proxy/mark_downloaded',
+                        dirPayload,
+                        {
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'Cookie': 'PHPSESSID=03c89c3b775c0c1093737b55f8757c07'
+                                // 'Cookie': 'PHPSESSID=0a8789882cabdcf73ed74d65be89de8e'
+                            }
+                        }
+                    );
+                } else {
+                    addLog("Failed to generate download link.", "Error");
+                }
+            }
+        } catch (error) {
+            console.error("Unexpected error:", error);
+            addLog("An unexpected error occurred. Check console for details.", "Error");
+        } finally {
+            submitButton.classList.remove('loading');
+            submitButton.disabled = false;
+
+            inputElement.classList.add('input-clear');
+            setTimeout(() => {
+                inputElement.value = '';
+                inputElement.classList.remove('input-clear');
+            }, 300);
+        }
+    }
+</script>
+</body>
+
+</html>
