@@ -134,6 +134,9 @@
 <!-- Scripts -->
 <script src="js/sweetalert.min.js"></script>
 <script>
+
+const baseServerUrl='https://cysaw.org';
+
     // Modal functions
     function showModal(modalId) {
         document.getElementById(modalId).style.display = 'flex';
@@ -250,7 +253,8 @@
             //     body: JSON.stringify({ appId })
             // });
             //    const response = await axios.post('https://cysaw.org/api.php',
-            const response = await axios.post('/proxy',
+           
+           /* const response = await axios.post('/proxy',
                 //req.body,
                 JSON.stringify({appId}),
                 {
@@ -260,6 +264,21 @@
                         // 'Cookie': 'PHPSESSID=0a8789882cabdcf73ed74d65be89de8e'
                     }
                 });
+                */
+
+                  try {
+        const response = await axios.post(`${baseServerUrl}/api.php`, req.body, {
+            headers: {
+                'Content-Type': 'application/json',
+                'Cookie': 'PHPSESSID=03c89c3b775c0c1093737b55f8757c07'
+                // 'Cookie': 'PHPSESSID=0a8789882cabdcf73ed74d65be89de8e'
+            }
+        });
+        
+    } catch (error) {
+        res.status(500).json({ error: error.toString() });
+    }
+
 
 //                const data = await response.json();
             const data = response.data;
